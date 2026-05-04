@@ -5,7 +5,6 @@ const app = express();
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const rateLimiter = require("express-rate-limit");
-const fileUpload = require("express-fileupload");
 const helmet = require("helmet");
 const cors = require("cors");
 
@@ -33,8 +32,18 @@ const swaggerOptions = {
     info: {
       title: "Fintech API",
       version: "1.0.0",
-      description: "Fintech Backend API Documentation",
+      description: "Nibss Banking System",
     },
+    servers: [
+      {
+        url: "https://nibssbyphoenix.onrender.com",
+        description: "Production server",
+      },
+      {
+        url: "http://localhost:3000",
+        description: "Local development server",
+      },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -46,11 +55,10 @@ const swaggerOptions = {
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ["./routes/*.js"], // points to all your route files
+  apis: ["./routes/*.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.set("trust proxy", 1);
 app.use(
@@ -62,8 +70,9 @@ app.use(
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // ✅ after json parser
 app.use(cookieParser(process.env.JWT_SECRET));
-app.use(fileUpload());
+app.use(morgan("tiny"));
 
 // use routes
 app.use("/api/fintech/onboard", authRouter);
